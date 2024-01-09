@@ -4,7 +4,7 @@ import { components } from "react-select";
 import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 import { Badge } from 'react-bootstrap';
-import { Bell, BellSlash, FilterCircle, FilterCircleFill, Incognito, People, PersonAdd } from "react-bootstrap-icons";
+import { At, Bell, BellSlash, FilterCircle, FilterCircleFill, Incognito, People, PersonAdd } from "react-bootstrap-icons";
 
 import { dispatch } from 'redux/store';
 import { changeModel } from "redux/actions/modelAction";
@@ -16,7 +16,7 @@ import { CONST, SOCKET } from "utils/constants";
 import { SocketEmiter } from "utils/wssConnection/Socket";
 
 import { ProfileStatusAvailable } from 'Components/Dropdowns/ProfileStatusDD';
-import { MultiSelectTextInput, MuiTooltip } from "Components/components";
+import { MultiSelectTextInput } from "Components/components";
 import AdvanceSearchBody from './AdvanceSearchBody';
 import ModalReactstrap from 'Components/Modals/Modal';
 import { CHAT_MODELS } from 'Routes/Chat/Models/models';
@@ -24,6 +24,8 @@ import ErrorBoundary from 'Components/ErrorBoundry';
 import { showSuccess } from 'utils/package_config/toast';
 import { Tab, Tabs } from '@mui/material';
 import { ListType } from '..';
+import { USER_CONST } from 'redux/constants/userContants';
+import { MuiActionButton } from 'Components/MuiDataGrid';
 const { DropdownIndicator } = components;
 
 export const ChatsContentSidebarHeader = ({
@@ -118,6 +120,11 @@ export const ChatsContentSidebarHeader = ({
         setChatSidebarState(prev => ({ ...prev, listType: val }));
     }, [setChatSidebarState]);
 
+    const onMentionUnread = useCallback(async () => {
+        dispatch({ type: USER_CONST.UPDATE_USER_DATA, payload: { id: user.id, showMentionUnread: !user?.showMentionUnread } });
+        showSuccess(`${user?.showMentionUnread ? 'Hide' : 'Show'} mention unread chats`);
+    }, [user.id, user?.showMentionUnread]);
+
     return (
         <ErrorBoundary>
             <div className="sidebar-header sticky-top bg__chat-dark" style={{ padding: ".75rem .75rem  0 .75rem" }}>
@@ -133,32 +140,55 @@ export const ChatsContentSidebarHeader = ({
                             </div>
                         </div>
                     </div>
-                    <ul className="nav flex-wrap">
-                        <li className="nav-item list-inline-item mr-0 cursor-pointer mx-1 btn-svg" onClick={toggleSilent}>
-                            <MuiTooltip title={`Tap to turn silent mode ${user?.isSilentMode ? 'off' : 'on'}`}>
-                                {!user.isSilentMode ? <Bell size={20} /> : <BellSlash size={20} />}
-                            </MuiTooltip>
+                    <ul className="nav flex-wrap gap-5">
+                        <li className="nav-item" onClick={toggleSilent}>
+                            <MuiActionButton tooltip={`Tap to turn silent mode ${user?.isSilentMode ? 'off' : 'on'}`}
+                                Icon={!user.isSilentMode ? Bell : BellSlash}
+                                size="small"
+                                className="text-color"
+                                onClick={toggleSilent}
+                            />
+                        </li>
+                        <li className="nav-item" onClick={onMentionUnread}>
+                            <MuiActionButton tooltip={`Tap to ${user?.showMentionUnread ? 'hide' : 'show'} mention unread chats`}
+                                Icon={At}
+                                className={`${!user.showMentionUnread ? "text-color" : "text-primary"}`}
+                                size="small"
+                                onClick={onMentionUnread}
+                            />
                         </li>
                         {getSuperAdminAccess(user) && user?.ghostUser &&
-                            <li className="nav-item list-inline-item mr-0 cursor-pointer mx-1 btn-svg" onClick={onGhostModeChange}>
-                                <MuiTooltip title={`Tap to turn ${!user?.isGhostActive ? 'on' : 'off'} ghost mode`}>
-                                    <Incognito size={22} className={user.isGhostActive ? 'text-primary' : null} />
-                                </MuiTooltip>
+                            <li className="nav-item" onClick={onGhostModeChange}>
+                                <MuiActionButton tooltip={`Tap to turn ${!user?.isGhostActive ? 'on' : 'off'} ghost mode`}
+                                    Icon={Incognito}
+                                    className={user.isGhostActive ? 'text-primary' : "text-color"}
+                                    size="small"
+                                    onClick={onGhostModeChange}
+                                />
                             </li>}
-                        <li className="nav-item list-inline-item mr-0 cursor-pointer mx-1 btn-svg" onClick={() => ModelHandler(CHAT_MODELS.NEW_CHAT)}>
-                            <MuiTooltip title='New Chat'>
-                                <PersonAdd size={22} />
-                            </MuiTooltip>
+                        <li className="nav-item">
+                            <MuiActionButton tooltip={'New Chat'}
+                                Icon={PersonAdd}
+                                size="small"
+                                className='text-color'
+                                onClick={() => ModelHandler(CHAT_MODELS.NEW_CHAT)}
+                            />
                         </li>
-                        <li className="nav-item list-inline-item mr-0 cursor-pointer mx-1 btn-svg" onClick={() => ModelHandler(CHAT_MODELS.CREATE_GROUP)}>
-                            <MuiTooltip title='Create Group'>
-                                <People size={22} />
-                            </MuiTooltip>
+                        <li className="nav-item">
+                            <MuiActionButton tooltip={'Create Group'}
+                                Icon={People}
+                                size="small"
+                                className='text-color'
+                                onClick={() => ModelHandler(CHAT_MODELS.CREATE_GROUP)}
+                            />
                         </li>
-                        <li className={`nav-item list-inline-item mr-0 cursor-pointer mx-1 btn-svg ${viewUnread ? 'text-success' : ''}`} onClick={() => setChatSidebarState(prev => ({ ...prev, viewUnread: !prev.viewUnread }))}>
-                            <MuiTooltip title='Filter Unraed Chat'>
-                                {viewUnread ? <FilterCircleFill size={22} /> : <FilterCircle size={22} />}
-                            </MuiTooltip>
+                        <li className={`nav-item`}>
+                            <MuiActionButton tooltip={'Filter Unraed Chat'}
+                                Icon={viewUnread ? FilterCircleFill : FilterCircle}
+                                size="small"
+                                className={`${viewUnread ? 'text-success' : 'text-color'}`}
+                                onClick={() => setChatSidebarState(prev => ({ ...prev, viewUnread: !prev.viewUnread }))}
+                            />
                         </li>
                     </ul>
                 </div>

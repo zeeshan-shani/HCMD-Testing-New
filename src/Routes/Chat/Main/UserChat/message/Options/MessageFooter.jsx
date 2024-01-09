@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import classes from "Routes/TaskBoard/TasksPage.module.css";
 import moment from 'moment-timezone';
 import { getBackgroundColorClass, getDueDateObj, getTaskBackgroundColorClass } from 'redux/common';
@@ -7,12 +7,21 @@ import { MuiTooltip } from 'Components/components';
 import { CONST } from 'utils/constants';
 import { dispatch } from 'redux/store';
 import { CHAT_CONST } from 'redux/constants/chatConstants';
+import { CHAT_MODELS } from 'Routes/Chat/Models/models';
+import { changeTask } from 'redux/actions/modelAction';
 
 export default function MessageFooter({ user, item, moveToOrigin = false, isBufferMsg = false, hideReactions }) {
     const setReactions = () => dispatch({ type: CHAT_CONST.SET_MESSAGE_REACTIONS, payload: item.messageEmojis });
     let tagStatus = null;
     if (item?.task) tagStatus = String(item.task?.status);
     const dueDateObj = getDueDateObj(item.task?.dueDate, tagStatus) || {};
+
+    const setThreadMessage = useCallback(() => {
+        if (!item) return;
+        dispatch({ type: CHAT_CONST.SET_THREAD_MESSAGE, payload: item });
+        changeTask(CHAT_MODELS.THREAD_ITEM);
+    }, [item]);
+
     return (
         <div className='position-relative my-1'>
             <div className='message-footer d-flex align-items-center justify-content-between flex-wrap'>
@@ -33,6 +42,12 @@ export default function MessageFooter({ user, item, moveToOrigin = false, isBuff
                     {!item?.isDeleted && item?.isMessage === false && tagStatus &&
                         <div title={item?.taskStatus} className={`d-flex align-items-center ${classes["msg-task-status"]} ${getTaskBackgroundColorClass(tagStatus)} px-1 h-auto mx-1`}>
                             <span className='text-white text-capitalize' style={{ fontSize: user?.fontSize }}>{tagStatus}</span>
+                        </div>}
+                    {!!item?.quotedMessageDetailData?.length &&
+                        <div className={`d-flex align-items-center mx-1 text-link text-color`} onClick={setThreadMessage}>
+                            <span className='text-capitalize' style={{ fontSize: user?.fontSize }}>
+                                {item.quotedMessageDetailData.length} Reply
+                            </span>
                         </div>}
                 </div>
                 <div className="message-date text-capitalize message-info message-text d-flex" style={{ fontSize: user?.fontSize }}>
