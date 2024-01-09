@@ -47,7 +47,8 @@ const getServerConfiguration = (version) => {
 	const development = {
 		version: CONST.RUN_MODE.DEVELOPMENT,
 		FURL: "http://192.168.100.133:3000",
-		URL: "http://192.168.1.241:3000", // API endpoint
+		// URL: "http://192.168.1.241:3000", // API endpoint - ykp
+		URL: "http://192.168.100.133:3030", // API endpoint - bjj
 		CLOUD_IMAGE: "https://dbvegu4yzhf6f.cloudfront.net",
 		RUNNING: "LOCAL"
 	}

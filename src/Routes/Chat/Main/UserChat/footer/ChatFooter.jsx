@@ -31,6 +31,7 @@ import { showError } from "utils/package_config/toast";
 import { useQuery } from "@tanstack/react-query";
 import CategoryAssign from "./CategoryAssign";
 import { getPatientName } from "Components/Modals/PatientInfoModal";
+import { useUnmount } from "react-use";
 
 const defaultInput = {
     subject: null,
@@ -117,12 +118,10 @@ export const ChatFooter = ({
             // }
             return { ...prev, isPrivateChat, privUsrId }
         })
-        return () => {
-            setMessageText(prev => {
-                setChatFooterData({ id: activeChat.id, data: prev });
-            });
-        }
     }, [activeChat.id, activeChat.type, activeChat.chatusers, activeChat.users, user.id]);
+
+    // Unmounted is used to save previous data in message box
+    useUnmount(() => setChatFooterData({ id: activeChat.id, data: messageText }));
 
     useEffect(() => {
         if (pastedFiles && !!pastedFiles.length) {
@@ -177,9 +176,7 @@ export const ChatFooter = ({
     }, [SetUserChatState, attachmentFiles.length, isUploading]);
 
     const inputEvent = ({ name, value }) => {
-        setMessageText((prev) => {
-            return { ...prev, [name]: value }
-        });
+        setMessageText((prev) => ({ ...prev, [name]: value }));
     };
     const onCloseQuoteHandler = () => {
         SetUserChatState(prev => ({ ...prev, quoteMessage: null }))
@@ -765,12 +762,12 @@ export const getPatientData = async (query, callback) => {
     }
 }
 
-function setChatFooterData({ id = 0, data = {} }) {
+const setChatFooterData = ({ id = 0, data = {} }) => {
     let prevData = localStorage.getItem('accessFooterData') ? JSON.parse(localStorage.getItem('accessFooterData')) : {};
     prevData[id] = data;
     localStorage.setItem('accessFooterData', JSON.stringify({ ...prevData }));
 }
-function getChatFooterData(id) {
+const getChatFooterData = (id) => {
     let prevData = localStorage.getItem('accessFooterData') ? JSON.parse(localStorage.getItem('accessFooterData')) : {};
     return prevData[id] ? prevData[id] : null;
 }
