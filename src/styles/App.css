@@ -1761,7 +1761,13 @@ textarea.resize-none {
 	box-shadow: none !important;
 	border-radius: 5px;
 	border-left: 5px solid var(--theme-color);
-	max-width: 100% !important;
+}
+
+.dashboard-unread-count {
+	border-left: 5px solid #ce3e8b;
+	background-color: rgba(0, 0, 0, 0.1);
+	box-shadow: none !important;
+	border-radius: 5px;
 }
 
 .message .message-content.quoted-message.qb-c-user-0 {

@@ -15,6 +15,9 @@ import { Board } from 'Routes/Dashboard/components/Chat/Board'
 import { ToggleSwitch } from 'Routes/Dashboard/components/Chat/ToggleSwitch'
 import { setUserHandler } from 'Routes/Chat/Sidebar/Chat'
 import Input from 'Components/FormBuilder/components/Input'
+import { Col, Row } from 'react-bootstrap'
+import chatService from 'services/APIs/services/chatService'
+import { useQuery } from '@tanstack/react-query'
 
 const initState = { search: "", chatType: CONST.CHAT_TYPE.ALL_CHATS }
 
@@ -38,6 +41,39 @@ export default function BoardList() {
     useEffect(() => {
         listenMessageUpdates(-1, user.id);
     }, [user.id]);
+
+    const { data: messageCount = { unreadCount: 0, mentionCount: 0 } } = useQuery({
+        queryKey: ["/chat/user/list", "unreadCount", user.id, dashboardUpdate],
+        queryFn: async () => {
+            const data = await chatService.chatuserList({
+                payload: {
+                    query: { userId: user.id },
+                    options: {
+                        group: [
+                            ["atTheRateMentionMessageCount", "sum"],
+                            ["routineUnreadMessageCount", "sum"],
+                            ["emergencyUnreadMessageCount", "sum"],
+                            ["urgentUnreadMessageCount", "sum"],
+                        ],
+                        attributes: ["userId"]
+                    },
+                    findOne: true
+                }
+            });
+            if (data?.status === 1)
+                return {
+                    unreadCount: (
+                        Number(data.data?.sum_routineUnreadMessageCount || 0) +
+                        Number(data.data?.sum_emergencyUnreadMessageCount || 0) +
+                        Number(data.data?.sum_urgentUnreadMessageCount || 0)
+                    ),
+                    mentionCount: data.data?.sum_atTheRateMentionMessageCount || 0
+                }
+            return;
+        },
+        keepPreviousData: false,
+        refetchInterval: 30 * 1000
+    });
 
     const onFilterUsersHandler = useCallback((type) => setFilters((prev) => ({ ...prev, chatType: type })), []);
 
@@ -95,6 +131,28 @@ export default function BoardList() {
                     </div>
                 </div>
             </div>
+            <Row className='mt-2 mx-1'>
+                <Col xs={12} md={6}>
+                    <div className="dashboard-unread-count d-flex py-1">
+                        <div className='d-flex justify-content-between align-items-center w-100 mx-2'>
+                            <div>
+                                Unread messages
+                            </div>
+                            <div className='font-weight-bold'>{messageCount.unreadCount}</div>
+                        </div>
+                    </div>
+                </Col>
+                <Col xs={12} md={6}>
+                    <div className="dashboard-unread-count d-flex py-1">
+                        <div className='d-flex justify-content-between align-items-center w-100 mx-2'>
+                            <div>
+                                Mentions
+                            </div>
+                            <div className='font-weight-bold'>{messageCount.mentionCount}</div>
+                        </div>
+                    </div>
+                </Col>
+            </Row>
             {(newObj.chatType === CONST.CHAT_TYPE.GROUP || newObj.chatType === CONST.CHAT_TYPE.ALL_CHATS) &&
                 <div className='dashboard_chat'>
                     <div className="bold-text">
