@@ -127,6 +127,9 @@ export default function ChatsContentSidebarList({
             });
             if (user.hasOwnProperty('ghostUser') && user?.isGhostActive && !hiddenChats) payload.query.ghostStatus = true;
             else payload.query.hiddenChats = !hiddenChats;
+            // showMentionUnread flag is to display mention unread chats 
+            // user.hasOwnProperty('ghostUser') && user?.isGhostActive
+            if (user.hasOwnProperty('showMentionUnread') && user?.showMentionUnread) payload.query.atTheRateMentionMessage = true;
             if (newGlobal && !!newGlobal.length) payload.query.search = newGlobal;
             const data = await loadUserChatList(payload);
             if (data?.status === 1) {
@@ -156,10 +159,10 @@ export default function ChatsContentSidebarList({
     }, [callNextChatList, callNextGlobalMessages]);
 
     useEffect(() => {
-        if (advanceSearch.data && !!Object.keys(advanceSearch.data).length)
+        if ((advanceSearch.data && !!Object.keys(advanceSearch.data).length) || user.hasOwnProperty("showMentionUnread"))
             resetData();
         //eslint-disable-next-line
-    }, [advanceSearch?.data]);
+    }, [advanceSearch?.data, user?.showMentionUnread]);
 
     useEffect(() => {
         if (chatlistState.offset !== 0 || loaders.chatList) return;
