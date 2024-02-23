@@ -7,10 +7,10 @@
 import { CONST } from "utils/constants";
 
 // Change ENV file version
-const version = CONST.RUN_MODE.PRODUCTION;  // for HCMD Live Server
+// const version = CONST.RUN_MODE.PRODUCTION;  // for HCMD Live Server
 // const version = CONST.RUN_MODE.STAGING;	// for HCMD Stage Server
 // const version = CONST.RUN_MODE.DEV_PRODUCTION;	// for Dev Server (PROD DB)
-// const version = CONST.RUN_MODE.DEVELOPMENT;	// for HCMD Local Server (LOCAL DB)
+const version = CONST.RUN_MODE.DEVELOPMENT;	// for HCMD Local Server (LOCAL DB)
 
 export const firebaseConfig = {
 	apiKey: "AIzaSyCsx7ANfKsR12vSAOnZ4p0KY0_KciPTR48",
@@ -48,7 +48,7 @@ const getServerConfiguration = (version) => {
 		version: CONST.RUN_MODE.DEVELOPMENT,
 		FURL: "http://192.168.100.133:3000",
 		// URL: "http://192.168.1.241:3000", // API endpoint - ykp
-		URL: "http://192.168.100.133:3030", // API endpoint - bjj
+		URL: "http://http://52.35.148.228:443", // API endpoint - bjj
 		CLOUD_IMAGE: "https://dbvegu4yzhf6f.cloudfront.net",
 		RUNNING: "LOCAL"
 	}
